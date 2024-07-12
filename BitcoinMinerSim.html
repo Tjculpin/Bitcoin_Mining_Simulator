@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bitcoin Mining Clicker Game</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 flex flex-col items-center justify-center h-screen">
+    <div class="max-w-md p-6 bg-white shadow-lg rounded-lg">
+        <h1 class="text-3xl mb-4">Bitcoin Mining Clicker Game</h1>
+        <p id="status" class="text-lg text-red-600 mb-4">Not Mining</p>
+        <button onclick="startMining()" class="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg mr-2">Start Mining</button>
+        <button onclick="stopMining()" class="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg">Stop Mining</button>
+        <p class="text-lg mt-4">Mined Bitcoins: <span id="bitcoins">0</span></p>
+        <p class="text-lg">Mining Rate: <span id="rate">0.01</span> BTC/sec</p>
+        
+        <div id="shop" class="mt-6">
+            <h2 class="text-2xl mb-2">Shop</h2>
+            <button onclick="buyRig()" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg mb-2">Buy Mining Rig (Costs <span id="rig-cost">1</span> BTC, +0.05 BTC/sec)</button>
+            <button onclick="upgradeRig()" class="bg-purple-500 hover:bg-purple-600 text-white py-2 px-4 rounded-lg mb-2">Upgrade Mining Rig (Costs <span id="upgrade-cost">5</span> BTC, x2 Rate)</button>
+            <button onclick="buyFactory()" class="bg-indigo-500 hover:bg-indigo-600 text-white py-2 px-4 rounded-lg">Buy Mining Factory (Costs <span id="factory-cost">10</span> BTC, +1 BTC/sec)</button>
+        </div>
+        
+        <p id="message" class="hidden text-2xl mt-6 text-green-600">HORRAY YOU WON!</p>
+    </div>
+
+    <div id="cheat-menu" class="absolute top-10 right-10 bg-white border border-gray-300 p-4 rounded-lg shadow-lg hidden">
+        <h2 class="text-xl mb-2">Cheat Menu</h2>
+        <button onclick="addMillionBTC()" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg mb-2">Add 1 Million BTC</button>
+        <button onclick="winGame()" class="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg mb-2">Win Game</button>
+        <button onclick="addRig()" class="bg-purple-500 hover:bg-purple-600 text-white py-2 px-4 rounded-lg mb-2">Add Mining Rig (+0.05 BTC/sec)</button>
+        <button onclick="addFactory()" class="bg-indigo-500 hover:bg-indigo-600 text-white py-2 px-4 rounded-lg mb-2">Add Mining Factory (+1 BTC/sec)</button>
+        <button onclick="closeCheatMenu()" class="bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-lg">Close</button>
+    </div>
+
+    <script>
+        let mining = false;
+        let minedBitcoins = 0;
+        let miningRate = 0.01;
+        let miningInterval;
+
+        let rigCost = 1;
+        let upgradeCost = 5;
+        let factoryCost = 10;
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'L') {
+                document.getElementById('cheat-menu').classList.toggle('hidden');
+            }
+        });
+
+        function startMining() {
+            if (!mining) {
+                mining = true;
+                document.getElementById("status").innerHTML = "Mining...";
+                document.getElementById("status").classList.remove('text-red-600');
+                document.getElementById("status").classList.add('text-green-600');
+                miningInterval = setInterval(mineBitcoin, 1000); // Start mining every second
+            }
+        }
+
+        function stopMining() {
+            mining = false;
+            document.getElementById("status").innerHTML = "Not Mining";
+            document.getElementById("status").classList.remove('text-green-600');
+            document.getElementById("status").classList.add('text-red-600');
+            clearInterval(miningInterval); // Stop the mining process
+        }
+
+        function mineBitcoin() {
+            if (mining) {
+                minedBitcoins += miningRate;
+                document.getElementById("bitcoins").innerHTML = minedBitcoins.toFixed(5);
+                if (minedBitcoins >= 1000000) {
+                    document.getElementById("message").classList.remove('hidden');
+                    stopMining();
+                }
+            }
+        }
+
+        function buyRig() {
+            if (minedBitcoins >= rigCost) {
+                minedBitcoins -= rigCost;
+                miningRate += 0.05;
+                rigCost *= 2; // Increase cost by 100%
+                updateUI();
+            }
+        }
+
+        function upgradeRig() {
+            if (minedBitcoins >= upgradeCost) {
+                minedBitcoins -= upgradeCost;
+                miningRate *= 2;
+                upgradeCost *= 3; // Triple the cost
+                updateUI();
+            }
+        }
+
+        function buyFactory() {
+            if (minedBitcoins >= factoryCost) {
+                minedBitcoins -= factoryCost;
+                miningRate += 1;
+                factoryCost *= 5; // Increase cost by 500%
+                updateUI();
+            }
+        }
+
+        function updateUI() {
+            document.getElementById("bitcoins").innerHTML = minedBitcoins.toFixed(5);
+            document.getElementById("rate").innerHTML = miningRate.toFixed(2);
+            document.getElementById("rig-cost").innerHTML = rigCost.toFixed(2);
+            document.getElementById("upgrade-cost").innerHTML = upgradeCost.toFixed(2);
+            document.getElementById("factory-cost").innerHTML = factoryCost.toFixed(2);
+        }
+
+        function addMillionBTC() {
+            minedBitcoins += 1000000;
+            updateUI();
+        }
+
+        function winGame() {
+            minedBitcoins = 1000000;
+            document.getElementById("message").classList.remove('hidden');
+            stopMining();
+            updateUI();
+        }
+
+        function addRig() {
+            miningRate += 0.05;
+            updateUI();
+        }
+
+        function addFactory() {
+            miningRate += 1;
+            updateUI();
+        }
+
+        function closeCheatMenu() {
+            document.getElementById('cheat-menu').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
